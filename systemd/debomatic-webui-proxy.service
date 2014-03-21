@@ -1,0 +1,14 @@
+[Unit]
+Description=Deb-o-Matic Node.js Proxy
+
+[Service]
+Type=simple
+EnvironmentFile=/home/debomatic/debomatic-webui/systemd/systemd.env
+ExecStart=/usr/bin/nodejs ${DWPROXY}/proxy.js 2>&1 > ${DWLOG}/proxy.log
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+
+[Install]
+Requires=debomatic-webui@amd64.service
+Requires=debomatic-webui@i386.service
+WantedBy=multi-user.target
