@@ -257,7 +257,8 @@ function Page_Distrubion(socket)
         var file_height = $("#fileOffset").offset().top
         var footerOffset = $("footer").offset().top
         if (file_height > footerOffset) {
-          $('html').animate({ scrollTop: file_height }, 0);
+          debug(2, 'scoll down on new content')
+          $('html,body').animate({ scrollTop: file_height }, 0);
         }
       }
     },
@@ -268,6 +269,9 @@ function Page_Distrubion(socket)
         query_data.package = view.package
         query_data.file = view.file
         query_data.file.content = null
+        // get a feedback to user while downloading file
+        $("#file pre").html("Downloading file, please wait a while ...")
+        $("#file").show()
         debug_socket("emit", _e.file.get, query_data)
         socket.emit(_e.file.get, query_data)
       }
@@ -559,7 +563,7 @@ function Page_Distrubion(socket)
         view.package.status = view.packages[view.package.orig_name].status
       view.file = Utils.clone(new_view.file)
       update.page(old_view)
-      $('html').animate({scrollTop: 0}, 0);
+      $('html,body').animate({scrollTop: 0}, 0);
       debug(1, "changing view", "old:", old_view, "new:", new_view)
     });
 
@@ -569,7 +573,7 @@ function Page_Distrubion(socket)
 
     // Init sticky-package back_on_top on click
     $("#sticky-package").on("click", function(){
-      $('html').animate({scrollTop: 0}, 100);
+      $('html,body').animate({scrollTop: 0}, 100);
     })
 
     // WORKAROUND:
