@@ -1,3 +1,23 @@
+// function to get all files in on click
+// event comes from HTML
+function download_all (div_id) {
+  frame_id = 'downloadAllFrame'
+  if ($("#" + frame_id).length > 0)
+    frame = $($("#" + frame_id)[0])
+  else {
+    frame = $('<iframe></iframe>')
+    frame.hide()
+    frame.attr('id', frame_id)
+    $('body').append(frame)
+  }
+  files = $(div_id).find('ul li a')
+  $.each(files, function(index, item) {
+    setTimeout(function() {
+      frame.attr('src', item.href)
+    }, index * 1000)
+  })
+}
+
 function Page_Distrubion(socket)
 {
 
@@ -16,6 +36,7 @@ function Page_Distrubion(socket)
       view.package.version
       view.package.orig_name
       view.package.status
+      view.package.success
       view.package.files    = [file]
       view.package.debs     = [file]
       view.package.sources  = [file]
@@ -34,7 +55,8 @@ function Page_Distrubion(socket)
       status_data = {}
       status_data.distribution                --- the distribution name
       status_data.package                     --- the package name as name_version
-      status_data.status                      --- one of config.status.*.*
+      status_data.status                      --- one of config.status.[build|create|update]
+      status_data.success                     --- true | false
 
     */
 
@@ -112,7 +134,7 @@ function Page_Distrubion(socket)
         $('#packages ul').append('<li class="text-muted">No packages yet</li>')
       }
       packages.show()
-      sticky.reset()
+      sticky.updateOffset()
     },
     clean: function () {
       $('#packages ul').html('')
@@ -139,7 +161,11 @@ function Page_Distrubion(socket)
       if ( view.distribution.name == status_data.distribution
         && view.packages[status_data.package] )
       {
-        view.packages[status_data.package].status = Utils.clone(status_data.status)
+        view.packages[status_data.package].status = status_data.status
+        if (status_data.hasOwnProperty('success'))
+          view.packages[status_data.package].success = status_data.success
+        else
+          delete(view.packages[status_data.package].success)
       }
       // and in html
       var p_html = $("#packages li[id='package-"+ status_data.package + "'] a")
@@ -150,7 +176,7 @@ function Page_Distrubion(socket)
         && view.distribution.name == status_data.distribution)
       {
         // in case user is watching this package, update also view.package
-        view.package.status = Utils.clone(status_data.status)
+        view.package = Utils.clone(view.packages[status_data.package])
       }
     },
     show: function() {
@@ -201,7 +227,7 @@ function Page_Distrubion(socket)
         $('#sources').show()
       }
       files.show()
-      sticky.reset()
+      sticky.updateOffset()
     },
     clean: function() {
       $('#logs ul').html('');
@@ -310,19 +336,20 @@ function Page_Distrubion(socket)
         sticky.show()
       } else {
         sticky.hide()
+        sticky.updateOffset()
       }
     },
     start: function() {
       $(window).scroll(sticky.init)
+    },
+    stop: function() {
+      $(window).off("scroll")
     },
     reset: function() {
       sticky.stop()
       sticky.update()
       sticky.init()
       sticky.start()
-    },
-    stop: function() {
-      $(window).off("scroll")
     },
     show: function() {
       if (config.preferences.sidebar) {
@@ -336,8 +363,7 @@ function Page_Distrubion(socket)
       $("#sticky-package").fadeOut(150)
     },
     update: function() {
-      var sidebar = $("#files")
-      sidebarOffset = sidebar.offset().top
+      sticky.updateOffset()
       if (Utils.check_view_distribution(view))
         $("#sticky-package .distribution").html(view.distribution.name)
       if (Utils.check_view_package(view)) {
@@ -346,12 +372,18 @@ function Page_Distrubion(socket)
         sticky.set_status()
       }
     },
+    updateOffset: function() {
+      var sidebar = $("#files")
+      sidebarOffset = sidebar.offset().top
+    },
     set_status: function(status_data) {
       if (! status_data) {
         status_data = {}
         status_data.distribution = view.distribution.name
         status_data.package = view.package.orig_name
         status_data.status = view.package.status
+        if (view.package.hasOwnProperty('success'))
+          status_data.success = view.package.success
       }
       if ( Utils.check_view_package(view)
         && status_data.distribution == view.distribution.name
@@ -472,21 +504,16 @@ function Page_Distrubion(socket)
         populate()
         return
       }
-      else if ( ! Utils.check_view_package(old_view)
-        || ! Utils.check_view_package(view)
-        || view.package.orig_name != old_view.package.orig_name
-      )
+      else if ( ! Utils.check_view_package(old_view) ||
+                ! Utils.check_view_package(view) ||
+                view.package.orig_name != old_view.package.orig_name )
       { // new package view
-        // set status from packages
-        if (view.packages[view.package.orig_name])
-          view.package.status = view.packages[view.package.orig_name].status
         files.get()
         file.get()
       }
-      else if ( ! Utils.check_view_file(old_view)
-        || ! Utils.check_view_file(view)
-        || view.file.name != old_view.file.name
-      )
+      else if ( ! Utils.check_view_file(old_view) ||
+                ! Utils.check_view_file(view) ||
+                view.file.name != old_view.file.name )
       { // new file view
         file.get()
       }
@@ -560,12 +587,12 @@ function Page_Distrubion(socket)
       // reset current view
       view.distribution = Utils.clone(new_view.distribution)
       view.package = Utils.clone(new_view.package)
-      if (view.packages[view.package.orig_name])
-        view.package.status = view.packages[view.package.orig_name].status
+      if (view.packages[new_view.package.orig_name])
+        view.package = Utils.clone(view.packages[new_view.package.orig_name])
       view.file = Utils.clone(new_view.file)
       update.page(old_view)
       $('html,body').animate({scrollTop: 0}, 0);
-      debug(1, "changing view", "old:", old_view, "new:", new_view)
+      debug(1, "changing view", "old:", old_view, "new:", view)
     });
 
     if (! __check_hash_makes_sense())

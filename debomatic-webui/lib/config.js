@@ -51,7 +51,7 @@ config.web.preferences = {}
 config.web.preferences.autoscroll = true
 config.web.preferences.header = true
 config.web.preferences.sidebar = true
-config.web.preferences.glossy_theme = false
+config.web.preferences.glossy_theme = true
 config.web.preferences.file_background = true
 config.web.preferences.file_fontsize = 13 // valid values are [13..16]
 config.web.preferences.debug = 0      // debug level - 0 means disabled
@@ -61,7 +61,7 @@ config.web.preferences.debug = 0      // debug level - 0 means disabled
 
 // DO NOT TOUCH these ones
 
-config.version = '0.1-b1'
+config.version = '0.2.0'
 
 // A simple function to quickly have
 // get and set strings for client events
@@ -86,13 +86,13 @@ config.events.client.file = _event_get_set('file')
 config.events.client.file_newcontent = 'file_newcontent'
 config.events.client.status = 'status'
 
-// packages status according with JSONLogger.py module
+// debomatic status according with JSONLogger.py module
 config.status = {}
-config.status.package = {}
-config.status.package.building = 'building'
-config.status.package.failed = 'build-failed'
-config.status.package.successed = 'build-successed'
-
+config.status.build = 'build'
+config.status.create = 'create'
+config.status.update = 'update'
+config.status.success = true
+config.status.fail = false
 
 // read user configuration and merge it
 /*
