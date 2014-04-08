@@ -20,6 +20,7 @@ config.web.debomatic.architecture = architecture
 
 config.debomatic = {}
 config.debomatic.path = '/srv/debomatic-' + architecture
+config.debomatic.jsonfile = '/var/log/debomatic-' + architecture + '.json'
 
 config.web.debomatic.dput = {}
 config.web.debomatic.dput.incoming = config.debomatic.path
