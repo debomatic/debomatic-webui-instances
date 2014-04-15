@@ -3,8 +3,8 @@
  * debomatic-webui amd64 configuration
  */
 
-var architecture = 'armhf'
-var port = 8002
+var architecture = 'armel'
+var port = 8001
 
 
 // common config

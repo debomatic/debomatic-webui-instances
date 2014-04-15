@@ -17,10 +17,17 @@ subdomains["debomatic-i386.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
-subdomains["debomatic-armhf.debian.net"] = new httpProxy.createProxyServer({
+subdomains["debomatic-armel.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
     port: 8001
+  }
+})
+
+subdomains["debomatic-armhf.debian.net"] = new httpProxy.createProxyServer({
+  target: {
+    host: 'localhost',
+    port: 8002
   }
 })
 
