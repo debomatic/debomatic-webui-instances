@@ -1,10 +1,10 @@
 
 /*
- * debomatic-webui armel configuration
+ * debomatic-webui powerpc configuration
  */
 
-var architecture = 'armel'
-var port = 8001
+var architecture = 'powerpc'
+var port = 8002
 
 
 // common config

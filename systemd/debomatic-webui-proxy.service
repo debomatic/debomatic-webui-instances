@@ -9,6 +9,4 @@ ExecStop=/bin/kill -TERM $MAINPID
 Restart=on-failure
 
 [Install]
-Requires=debomatic-webui@amd64.service
-Requires=debomatic-webui@i386.service
 WantedBy=multi-user.target

@@ -1,6 +1,6 @@
 
 /*
- * debomatic-webui amd64 configuration
+ * debomatic-webui armhf configuration
  */
 
 var architecture = 'armhf'
