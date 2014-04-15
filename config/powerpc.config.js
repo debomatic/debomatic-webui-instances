@@ -4,7 +4,7 @@
  */
 
 var architecture = 'powerpc'
-var port = 8002
+var port = 8003
 
 
 // common config
