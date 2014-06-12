@@ -1,5 +1,8 @@
 'use strict';
 
+/* global debug: false */
+/* global page_generic: false */
+
 // function to get all files in on click
 // event comes from HTML
 function download_all(div_id) {
@@ -65,7 +68,7 @@ function Page_Distrubion(socket) {
     var _e = config.events.client;
     var view = Utils.from_hash_to_view();
     var sidebarOffset = 0;
-    var new_lines = [];
+    var current_file_in_preview = false;
 
     function __check_hash_makes_sense() {
         if (window.location.hash.indexOf('..') >= 0) {
@@ -100,6 +103,7 @@ function Page_Distrubion(socket) {
                 label += ' <a class="btn btn-link btn-lg" title="Download" href="' + view.file.path + '"> ' +
                     '<span class="glyphicon glyphicon-download-alt"></span></a>';
                 if (config.file.preview.indexOf(view.file.name) >= 0) {
+                    current_file_in_preview = true;
                     var view_all = $('<a id="get-whole-file" class="btn btn-link btn-lg" title="View the whole file"></a>');
                     view_all.html('<span class="glyphicon glyphicon-eye-open"></span>');
                     label += view_all.get(0).outerHTML;
@@ -230,7 +234,7 @@ function Page_Distrubion(socket) {
                 // update html
                 socket_data.package.sources.forEach(function (f) {
                     $('#sources ul').append('<li><a title="' + f.orig_name + '" href="' + f.path + '">' + f.name + '</a></li>');
-                })
+                });
                 $('#sources').show();
             }
             files.show();
@@ -284,7 +288,15 @@ function Page_Distrubion(socket) {
         },
         append: function (new_content) {
             var content = $('#file pre');
-            content.append(new_content);
+            if (!current_file_in_preview) {
+                content.append(new_content);
+            } else {
+                // always show only config.file.num_lines lines in preview
+                content = content.html().replace(/\n$/, '').split('\n');
+                content = content.concat(new_content.replace(/\n$/, '').split('\n'));
+                content = content.slice(-config.file.num_lines).join('\n');
+                $('#file pre').html(content);
+            }
 
             if (config.preferences.autoscroll) {
                 // scroll down if file is covering footer
@@ -571,7 +583,7 @@ function Page_Distrubion(socket) {
 
         socket.on(_e.file_newcontent, function (socket_data) {
             debug_socket('received', _e.file_newcontent, socket_data);
-            new_lines.push(socket_data.file.new_content);
+            file.append(socket_data.file.new_content);
         });
 
         $(window).on('hashchange', function () {
@@ -608,18 +620,6 @@ function Page_Distrubion(socket) {
         // equals 0. This is because html is loaded on socket
         // events. Sleep a while and call stiky.reset()
         setTimeout(sticky.reset, 500);
-
-        // WORKAROUND:
-        // On incoming hundred of lines browser goes crazy.
-        // Append lines every 200 mills.
-        function watch_for_new_lines() {
-            if (new_lines.length > 0) {
-                file.append(new_lines.join(''));
-                new_lines = [];
-            }
-            setTimeout(watch_for_new_lines, 200);
-        }
-        watch_for_new_lines();
 
         // Update html according with preferences
         preferences();
