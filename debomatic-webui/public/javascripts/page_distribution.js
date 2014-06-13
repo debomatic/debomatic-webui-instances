@@ -68,6 +68,7 @@ function Page_Distrubion(socket) {
     var _e = config.events.client;
     var view = Utils.from_hash_to_view();
     var sidebarOffset = 0;
+    var new_lines = [];
     var current_file_in_preview = false;
 
     function __check_hash_makes_sense() {
@@ -102,8 +103,7 @@ function Page_Distrubion(socket) {
                     view.file.path = config.paths.debomatic + '/' + view.distribution.name + '/pool/' + view.package.orig_name + '/' + complete_name;
                 label += ' <a class="btn btn-link btn-lg" title="Download" href="' + view.file.path + '"> ' +
                     '<span class="glyphicon glyphicon-download-alt"></span></a>';
-                if (config.file.preview.indexOf(view.file.name) >= 0) {
-                    current_file_in_preview = true;
+                if (current_file_in_preview) {
                     var view_all = $('<a id="get-whole-file" class="btn btn-link btn-lg" title="View the whole file"></a>');
                     view_all.html('<span class="glyphicon glyphicon-eye-open"></span>');
                     label += view_all.get(0).outerHTML;
@@ -120,8 +120,9 @@ function Page_Distrubion(socket) {
 
             // set onclick get-whole-file
             $("#get-whole-file").on('click', function () {
+                debug(1, "get the whole file");
                 file.get(true);
-                current_file_in_preview = false;
+                $(this).remove();
             });
         },
         clean: function () {
@@ -282,6 +283,8 @@ function Page_Distrubion(socket) {
             view.file = Utils.clone(socket_data.file);
             $('#file pre').html(socket_data.file.content);
             $('#file').show();
+            if (current_file_in_preview)
+                $('#file pre').scrollTop($('#file pre')[0].scrollHeight);
         },
         clean: function () {
             $('#file pre').html('');
@@ -297,6 +300,7 @@ function Page_Distrubion(socket) {
                 content = content.concat(new_content.replace(/\n$/, '').split('\n'));
                 content = content.slice(-config.file.num_lines).join('\n');
                 $('#file pre').html(content);
+                $('#file pre').scrollTop($('#file pre')[0].scrollHeight);
             }
 
             if (config.preferences.autoscroll) {
@@ -313,6 +317,11 @@ function Page_Distrubion(socket) {
         },
         get: function (force) {
             if (Utils.check_view_file(view)) {
+                if (force) {
+                    file.set_preview(false);
+                } else {
+                    file.set_preview();
+                }
                 var query_data = {};
                 query_data.distribution = view.distribution;
                 query_data.package = view.package;
@@ -325,7 +334,26 @@ function Page_Distrubion(socket) {
                 debug_socket('emit', _e.file.get, query_data);
                 socket.emit(_e.file.get, query_data);
             }
+        },
+        set_preview: function (preview) {
+            if (preview === undefined) {
+                preview = config.file.preview.indexOf(view.file.name) >= 0;
+            }
+            debug(2, "file set preview", preview);
+            current_file_in_preview = preview;
+            if (preview) {
+                $('#file pre').addClass('preview');
+                var height = (config.file.num_lines) *
+                    parseInt($('#file pre').css('line-height').replace(/[^-\d\.]/g, '')) +
+                    parseInt($('#file pre').css('padding-top').replace(/[^-\d\.]/g, '')) +
+                    parseInt($('#file pre').css('padding-bottom').replace(/[^-\d\.]/g, ''));
+                $('#file pre').css('max-height', height);
+            } else {
+                $('#file pre').removeClass('preview');
+                $('#file pre').css('max-height', 'auto');
+            }
         }
+
     };
 
     var breadcrumb = {
@@ -584,7 +612,7 @@ function Page_Distrubion(socket) {
 
         socket.on(_e.file_newcontent, function (socket_data) {
             debug_socket('received', _e.file_newcontent, socket_data);
-            file.append(socket_data.file.new_content);
+            new_lines.push(socket_data.file.new_content);
         });
 
         $(window).on('hashchange', function () {
@@ -621,6 +649,18 @@ function Page_Distrubion(socket) {
         // equals 0. This is because html is loaded on socket
         // events. Sleep a while and call stiky.reset()
         setTimeout(sticky.reset, 500);
+
+        // WORKAROUND:
+        // On incoming hundred of lines browser goes crazy.
+        // Append lines every 200 mills.
+        function watch_for_new_lines() {
+            if (new_lines.length > 0) {
+                file.append(new_lines.join(''));
+                new_lines = [];
+            }
+            setTimeout(watch_for_new_lines, 150);
+        }
+        watch_for_new_lines();
 
         // Update html according with preferences
         preferences();
