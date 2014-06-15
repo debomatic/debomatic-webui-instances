@@ -67,22 +67,7 @@ config.web.preferences.debug = 0; // debug level - 0 means disabled
 
 // DO NOT TOUCH these ones
 
-config.version = '0.4.1';
-
-// A simple function to quickly have
-// get and set strings for client events
-function _event_get_set(event_name) {
-    return {
-        set: event_name,
-        get: 'get_' + event_name
-    };
-}
-
-config.debomatic.pidfile = "/var/run/debomatic-" +
-    require('crypto')
-    .createHash('sha256')
-    .update(config.debomatic.path)
-    .digest('hex');
+config.version = '0.4.2';
 
 config.events = {};
 config.events.error = 'error';
@@ -92,10 +77,10 @@ config.events.broadcast.status_update = 'status_update';
 config.events.broadcast.status_debomatic = 'status_debomatic';
 
 config.events.client = {};
-config.events.client.distribution_packages = _event_get_set('distribution_packages');
+config.events.client.distribution_packages = 'distribution_packages';
 config.events.client.distribution_packages.status = 'package_status';
-config.events.client.package_files_list = _event_get_set('package_files_list');
-config.events.client.file = _event_get_set('file');
+config.events.client.package_files_list = 'package_files_list';
+config.events.client.file = 'file';
 config.events.client.file_newcontent = 'file_newcontent';
 config.events.client.status = 'status';
 
@@ -151,5 +136,13 @@ try {
     config.web.events = config.events;
     config.web.status = config.status;
     config.web.host = config.host;
+
+    // calculate pidfile
+    config.debomatic.pidfile = "/var/run/debomatic-" +
+        require('crypto')
+        .createHash('sha256')
+        .update(config.debomatic.path)
+        .digest('hex');
+
     module.exports = config;
 }
