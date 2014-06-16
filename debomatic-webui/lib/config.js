@@ -28,10 +28,10 @@ config.routes = {};
 config.routes.debomatic = '/debomatic';
 config.routes.distribution = '/distribution';
 config.routes.preferences = '/preferences';
+config.routes.commands = '/commands';
 
+// web configuration
 config.web = {};
-config.web.title = 'Deb-o-Matic web.ui';
-config.web.description = 'This is a web interface for debomatic';
 
 // debomatic configuration exportable for web
 config.web.debomatic = {};
@@ -46,6 +46,10 @@ config.web.debomatic.dput.host = config.host;
 config.web.debomatic.dput.login = 'debomatic';
 config.web.debomatic.dput.method = 'scp';
 config.web.debomatic.dput.unsigned_uploads = false;
+
+// header title and description
+config.web.title = 'Deb-o-Matic web.ui';
+config.web.description = 'This is a web interface for debomatic over ' + config.web.debomatic.architecture;
 
 // list of files get preview
 config.web.file = {};
@@ -67,7 +71,7 @@ config.web.preferences.debug = 0; // debug level - 0 means disabled
 
 // DO NOT TOUCH these ones
 
-config.version = '0.4.2';
+config.version = '0.5.0';
 
 config.events = {};
 config.events.error = 'error';

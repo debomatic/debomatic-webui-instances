@@ -13,6 +13,7 @@
   <aside id="sidebar" class="col-md-3">
     <nav id="packages">
       <h2>Packages</h2>
+      <input type="text" class="form-control search" placeholder="Search">
       <ul class="nav nav-pills nav-stacked"></ul>
     </nav>
 
@@ -25,7 +26,7 @@
         <div class="others">
           <nav id="sources">
             <h4>Sources
-              <a class="btn btn-link" title="Get all sources in one click"  onclick="download_all('#sources')">
+              <a class="btn btn-link" data-toggle="tooltip" data-placement="right" title="Get all sources in one click"  onclick="download_all('#sources')">
                 <span class="glyphicon glyphicon-download-alt"></span>
               </a>
             </h4>
@@ -33,7 +34,7 @@
           </nav>
           <nav id="debs">
             <h4>Debs
-              <a class="btn btn-link" title="Get all debs in one click"  onclick="download_all('#debs')">
+              <a class="btn btn-link" data-toggle="tooltip" data-placement="right"  title="Get all debs in one click"  onclick="download_all('#debs')">
                 <span class="glyphicon glyphicon-download-alt"></span>
               </a>
             </h4>
@@ -41,7 +42,7 @@
           </nav>
         </div>
       </section>
-      <section title="Back on Top" id="sticky-package">
+      <section data-toggle="tooltip" title="Back on Top" id="sticky-package">
         <div id="sticky-package-content">
           <div class="panel-heading">
             <h3 class="panel-title">
@@ -64,6 +65,7 @@
     </header>
     <div id="welcome"></div>
     <div id="file">
+      <h5><span class="label label-default datestamp"></span></h5>
       <pre></pre>
       <div id="fileOffset"></div>
     </div>

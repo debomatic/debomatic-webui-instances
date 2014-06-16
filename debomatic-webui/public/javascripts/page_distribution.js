@@ -101,10 +101,10 @@ function Page_Distrubion(socket) {
                 label = complete_name;
                 if (!view.file.path)
                     view.file.path = config.paths.debomatic + '/' + view.distribution.name + '/pool/' + view.package.orig_name + '/' + complete_name;
-                label += ' <a class="btn btn-link btn-lg" title="Download" href="' + view.file.path + '"> ' +
+                label += ' <a class="btn btn-link btn-lg" data-toggle="tooltip" title="Download" href="' + view.file.path + '"> ' +
                     '<span class="glyphicon glyphicon-download-alt"></span></a>';
                 if (current_file_in_preview) {
-                    var view_all = $('<a id="get-whole-file" class="btn btn-link btn-lg" title="View the whole file"></a>');
+                    var view_all = $('<a id="get-whole-file" data-toggle="tooltip" class="btn btn-link btn-lg" title="View the whole file"></a>');
                     view_all.html('<span class="glyphicon glyphicon-eye-open"></span>');
                     label += view_all.get(0).outerHTML;
                 }
@@ -122,7 +122,7 @@ function Page_Distrubion(socket) {
             $("#get-whole-file").on('click', function () {
                 debug(1, "get the whole file");
                 file.get(true);
-                $(this).remove();
+                $(this).fadeOut('fast');
             });
         },
         clean: function () {
@@ -140,9 +140,10 @@ function Page_Distrubion(socket) {
             if (socket_data.distribution.packages && socket_data.distribution.packages.length > 0) {
                 socket_data.distribution.packages.forEach(function (p) {
                     tmp.package = p;
-                    // get datestamp if package is clicked
+                    // get buildlog if package is clicked
                     $('#packages ul').append('<li id="package-' + p.orig_name + '"><a href="' +
-                        Utils.from_view_to_hash(tmp) + '/datestamp">' + p.name + ' <span>' + p.version + '</span></a></li>');
+                        Utils.from_view_to_hash(tmp) + '/buildlog"><span class="name">' + p.name + '</span> ' +
+                        '<span class="version">' + p.version + '</span></a></li>');
                     view.packages[p.orig_name] = Utils.clone(p);
                 });
                 packages.select();
@@ -154,6 +155,7 @@ function Page_Distrubion(socket) {
         },
         clean: function () {
             $('#packages ul').html('');
+            $('#packages .search').val('');
         },
         get: function () {
             if (Utils.check_view_distribution(view)) {
@@ -168,6 +170,7 @@ function Page_Distrubion(socket) {
             if (Utils.check_view_package(view)) {
                 $('#packages li[id="package-' + view.package.orig_name + '"]').addClass('active');
             }
+            packages.search();
         },
         unselect: function () {
             $('#packages li').removeClass('active');
@@ -195,6 +198,26 @@ function Page_Distrubion(socket) {
         },
         hide: function () {
             $('#packages').hide();
+        },
+        search: function (token) {
+            if (!token)
+                token = $("#packages .search").val();
+            if (!token) {
+                debug(2, "packages search token empty - showing all");
+                $("#packages li").show();
+            } else {
+                $("#packages li").not('.active').each(function (index) {
+                    var p_name = $(this).find('a span.name').text();
+                    if (p_name.indexOf(token) < 0) {
+                        debug(2, "packages search token:", token, "hiding:", this);
+                        $(this).hide();
+                    } else {
+                        debug(2, "packages search token:", token, "showing:", this);
+                        $(this).show();
+                    }
+                });
+            }
+            sticky.updateOffset();
         }
     };
 
@@ -258,6 +281,26 @@ function Page_Distrubion(socket) {
                 query_data.package = view.package;
                 debug_socket('emit', _e.package_files_list, query_data);
                 socket.emit(_e.package_files_list, query_data);
+                files.get_datestamp();
+            }
+        },
+        get_datestamp: function (socket_data) {
+            if (Utils.check_view_package(view)) {
+                if (socket_data && socket_data.package != view.package.orig_name)
+                    return;
+                var url = config.paths.debomatic + '/' +
+                    view.distribution.name + '/pool/' +
+                    view.package.orig_name + '/' +
+                    view.package.orig_name + '.datestamp';
+                debug(2, 'getting datestamp');
+                $.get(url, function (data) {
+                    data = data.replace('Build finished', 'finished');
+                    data = data.replace('Elapsed', 'elapsed');
+                    data = data.replace(/\n$/g, '');
+                    data = data.replace(/\n/g, ' - ');
+                    data = data.replace(/at /g, '');
+                    $("#file .datestamp").html(data);
+                });
             }
         },
         select: function () {
@@ -280,27 +323,28 @@ function Page_Distrubion(socket) {
 
     var file = {
         set: function (socket_data) {
+            var file_content = $('#file pre');
             view.file = Utils.clone(socket_data.file);
-            $('#file pre').html(socket_data.file.content);
-            $('#file').show();
+            file_content.text(socket_data.file.content);
+            file_content.show();
             if (current_file_in_preview)
-                $('#file pre').scrollTop($('#file pre')[0].scrollHeight);
+                file_content.scrollTop(file_content[0].scrollHeight);
         },
         clean: function () {
             $('#file pre').html('');
             $('#file').hide();
         },
         append: function (new_content) {
-            var content = $('#file pre');
+            var file_content = $('#file pre');
             if (!current_file_in_preview) {
-                content.append(new_content);
+                file.append(new_content);
             } else {
                 // always show only config.file.num_lines lines in preview
-                content = content.html().replace(/\n$/, '').split('\n');
+                var content = file_content.html().replace(/\n$/, '').split('\n');
                 content = content.concat(new_content.replace(/\n$/, '').split('\n'));
                 content = content.slice(-config.file.num_lines).join('\n');
-                $('#file pre').html(content);
-                $('#file pre').scrollTop($('#file pre')[0].scrollHeight);
+                file_content.html(content);
+                file_content.scrollTop(file_content[0].scrollHeight);
             }
 
             if (config.preferences.autoscroll) {
@@ -341,16 +385,17 @@ function Page_Distrubion(socket) {
             }
             debug(2, "file set preview", preview);
             current_file_in_preview = preview;
+            var file = $('#file pre');
             if (preview) {
                 $('#file pre').addClass('preview');
                 var height = (config.file.num_lines) *
-                    parseInt($('#file pre').css('line-height').replace(/[^-\d\.]/g, '')) +
-                    parseInt($('#file pre').css('padding-top').replace(/[^-\d\.]/g, '')) +
-                    parseInt($('#file pre').css('padding-bottom').replace(/[^-\d\.]/g, ''));
-                $('#file pre').css('max-height', height);
+                    parseInt(file.css('line-height').replace(/[^-\d\.]/g, '')) +
+                    parseInt(file.css('padding-top').replace(/[^-\d\.]/g, '')) +
+                    parseInt(file.css('padding-bottom').replace(/[^-\d\.]/g, ''));
+                file.css('max-height', height);
             } else {
-                $('#file pre').removeClass('preview');
-                $('#file pre').css('max-height', 'auto');
+                file.removeClass('preview');
+                file.css('max-height', 'auto');
             }
         }
 
@@ -451,6 +496,8 @@ function Page_Distrubion(socket) {
 
     var error = {
         set: function (socket_error) {
+            if ($('#error').is(':visible'))
+                return;
             $('#error span').html(socket_error);
             error.view();
         },
@@ -561,6 +608,8 @@ function Page_Distrubion(socket) {
             breadcrumb.update();
             select();
             sticky.reset();
+            // active tooltip
+            $("[data-toggle='tooltip']").tooltip();
         }
     };
 
@@ -598,6 +647,7 @@ function Page_Distrubion(socket) {
         socket.on(config.events.broadcast.status_update, function (socket_data) {
             packages.set_status(socket_data);
             sticky.set_status(socket_data);
+            files.get_datestamp(socket_data);
         });
 
         socket.on(_e.package_files_list, function (socket_data) {
@@ -661,6 +711,11 @@ function Page_Distrubion(socket) {
             setTimeout(watch_for_new_lines, 150);
         }
         watch_for_new_lines();
+
+        // Handle search packages
+        $('#packages .search').on('keyup', function (event) {
+            packages.search($(event.target).val());
+        });
 
         // Update html according with preferences
         preferences();
