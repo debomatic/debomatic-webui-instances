@@ -96,7 +96,7 @@ function Page_Distrubion(socket) {
                 debug(2, 'scrolling page down - height', height);
                 $('html,body').animate({
                     scrollTop: height
-                }, 0);
+                }, delay);
             },
             up: function (delay) {
                 if (delay === undefined)
@@ -169,6 +169,14 @@ function Page_Distrubion(socket) {
                         '<span class="version">' + p.version + '</span></a></li>');
                     view.packages[p.orig_name] = Utils.clone(p);
                 });
+                // on double click set search value to package name, in other words
+                // on double click show only that package
+                $('#packages ul li').on('dblclick', function (event) {
+                    var name = $(this).find('.name').html();
+                    debug(1, 'double click - selecting:', name);
+                    $('#packages .search .text').val(name);
+                    $('#packages .search .text').keyup();
+                });
                 packages.select();
             } else {
                 $('#packages ul').append('<li class="text-muted">No packages yet</li>');
@@ -178,7 +186,7 @@ function Page_Distrubion(socket) {
         },
         clean: function () {
             $('#packages ul').html('');
-            $('#packages .search').val('');
+            $('#packages .search .text').val('');
         },
         get: function () {
             if (Utils.check_view_distribution(view)) {
@@ -224,18 +232,18 @@ function Page_Distrubion(socket) {
         },
         search: function (token) {
             if (!token)
-                token = $("#packages .search").val();
+                token = $('#packages .search .text').val();
             if (!token) {
-                debug(2, "packages search token empty - showing all");
-                $("#packages li").show();
+                debug(2, 'packages search token empty - showing all');
+                $('#packages li').show();
             } else {
-                $("#packages li").not('.active').each(function (index) {
+                $('#packages li').not('.active').each(function (index) {
                     var p_name = $(this).find('a span.name').text();
                     if (p_name.indexOf(token) < 0) {
-                        debug(2, "packages search token:", token, "hiding:", this);
+                        debug(2, 'packages search token:', token, 'hiding:', this);
                         $(this).hide();
                     } else {
-                        debug(2, "packages search token:", token, "showing:", this);
+                        debug(2, 'packages search token:', token, 'showing:', this);
                         $(this).show();
                     }
                 });
@@ -728,9 +736,15 @@ function Page_Distrubion(socket) {
         watch_for_new_lines();
 
         // Handle search packages
-        $('#packages .search').on('keyup', function (event) {
+        $('#packages .search .text').on('keyup', function (event) {
             packages.search($(event.target).val());
         });
+        $('#packages .search .reset').on('click', function (event) {
+            debug(1, 'packages search reset');
+            $('#packages .search .text').val('');
+            $('#packages .search .text').keyup();
+        });
+
 
         // Update html according with preferences
         preferences();
