@@ -4,7 +4,7 @@ Description=Deb-o-Matic Node.js
 [Service]
 Type=simple
 EnvironmentFile=/home/debomatic/debomatic-webui/systemd/systemd.env
-ExecStart=/usr/bin/nodejs ${DW}/debomatic-webui -c ${DWCONFIG}/%i.config.js 2>&1 > ${DWLOG}/webui-%i.log
+ExecStart=/usr/bin/nodejs ${DW}/debomatic-webui -c ${DWCONFIG}/%i.config.js
 ExecStop=/bin/kill -TERM $MAINPID
 Restart=on-failure
 
