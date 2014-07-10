@@ -68,7 +68,9 @@ config.web.preferences.debug = 0; // debug level - 0 means disabled
 
 // DO NOT TOUCH these ones
 
-config.version = '0.5.1';
+config.version = '0.6.0';
+
+config.debomatic.excluded_files = ['datestamp', 'json'];
 
 config.events = {};
 config.events.error = 'server-error';
@@ -81,6 +83,7 @@ config.events.client = {};
 config.events.client.distribution_packages = 'c.distribution_packages';
 config.events.client.distribution_packages_status = 'c.distribution_packages_status';
 config.events.client.package_files_list = 'c.package_files_list';
+config.events.client.package_info = 'c.package_info';
 config.events.client.file = 'c.file';
 config.events.client.file_newcontent = 'c.file_newcontent';
 config.events.client.status = 'c.status';

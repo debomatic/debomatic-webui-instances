@@ -18,6 +18,8 @@ function __get_files_list_from_package(data, callback) {
             file.orig_name = f;
             file.name = f.split('_')[0];
             file.extension = f.split('.').pop();
+            if (config.debomatic.excluded_files.indexOf(file.extension) >= 0)
+                return;
             if (file.extension == 'deb' || file.extension == 'ddeb' || file.extension == 'udeb') {
                 data.package.debs.push(file);
             } else if (f.indexOf('.tar') >= 0 || file.extension == 'changes' || file.extension == 'dsc') {
@@ -42,50 +44,35 @@ function __send_package_files_list(event_name, socket, data) {
     });
 }
 
-function __send_package_status(socket, data, package_data) {
-
-    var event_name = config.events.client.distribution_packages_status;
-
-    var new_data = {};
-    new_data.distribution = data.distribution;
-    new_data.package = package_data;
-
-    var status_data = {};
-    status_data.status = config.status.build;
-    status_data.distribution = data.distribution.name;
-    status_data.package = package_data.orig_name;
-
-    var package_path = utils.get_package_path(new_data);
-
-    //  status policy:
-    //  + successed: exists .dsc
-    //  + building: wc -l .datestamp == 1 (FIX_ME)
-    //  + failed: else
-    var base_path = path.join(package_path, package_data.orig_name);
-    fs.exists(base_path + '.dsc', function (dsc_exists) {
-        if (dsc_exists) {
-            status_data.success = config.status.success;
-            socket.emit(event_name, status_data);
-        } else {
-            // emulate wc -l .datestamp in nodejs
-            var count = 0;
-            var datestamp = base_path + '.datestamp';
-            fs.exists(datestamp, function (datestamp_exists) {
-                if (datestamp_exists) {
-                    // count lines
-                    fs.createReadStream(datestamp)
-                        .on('data', function (chunk) {
-                            for (var i = 0; i < chunk.length; ++i)
-                                if (chunk[i] == 10) count++;
-                        })
-                        .on('end', function () {
-                            if (count > 1)
-                                status_data.success = config.status.fail;
-                            socket.emit(event_name, status_data);
-                        });
-                }
-            });
+function __read_package_status(data, cb) {
+    var package_path = utils.get_package_path(data);
+    var package_json = path.join(package_path, data.package.orig_name + '.json');
+    fs.readFile(package_json, {
+        encoding: 'utf8'
+    }, function (err, content) {
+        if (err) {
+            utils.errors_handler('Client:__read_package_status:', err);
+            return;
         }
+        try {
+            content = JSON.parse(content);
+        } catch (parse_err) {
+            utils.errors_handler('Client:__read_package_status:parse_err:', parse_err);
+            return;
+        }
+        cb(content);
+    });
+}
+
+function __send_package_info(socket, data) {
+    __read_package_status(data, function (content) {
+        socket.emit(_e.package_info, content);
+    });
+}
+
+function __send_package_status(socket, data) {
+    __read_package_status(data, function (content) {
+        socket.emit(_e.distribution_packages_status, content);
     });
 }
 
@@ -99,8 +86,11 @@ function __send_distribution_packages(event_name, socket, data) {
             pack.name = info[0];
             pack.version = info[1];
             pack.orig_name = p;
+            __send_package_status(socket, {
+                distribution: data.distribution,
+                package: pack
+            });
             data.distribution.packages.push(pack);
-            __send_package_status(socket, data, pack);
         });
         socket.emit(event_name, data);
     });
@@ -160,6 +150,12 @@ function Client(socket) {
             if (!utils.check_data_file(data))
                 return;
             __handler_get_file(socket, data);
+        });
+
+        socket.on(_e.package_info, function (data) {
+            if (!utils.check_data_package(data))
+                return;
+            __send_package_info(socket, data);
         });
 
 
