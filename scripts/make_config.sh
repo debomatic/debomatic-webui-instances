@@ -11,4 +11,4 @@ architecture = \"$ARCH\"
 port = $PORT
 
 # DO NOT EDIT THIS LINE:
-config = require(process.env.DW + '/config/mergerconfig.coffee')(architecture, port)
+config = require(process.env.DWCONFIG + '/mergerconfig.coffee')(architecture, port)
