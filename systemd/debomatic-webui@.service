@@ -1,5 +1,5 @@
 [Unit]
-Description=Deb-o-Matic Node.js
+Description=Deb-o-Matic web.ui
 
 [Service]
 Type=simple
