@@ -119,6 +119,12 @@ class DebomaticModule_JSONLogger:
             json = toJSON(info, indent=4, sort_keys=True)
             infofd.write(json + '\n')
 
+    def _get_human_size(self, num):
+        for x in ['b', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return "%3.1f %s" % (num, x)
+            num /= 1024.0
+
     def pre_chroot(self, args):
         distribution = self._get_distribution_status(args)
         self._append_json_logfile(args, distribution)
@@ -139,18 +145,21 @@ class DebomaticModule_JSONLogger:
     def post_build(self, args):
         status = self._get_package_status(args)
         status['status'] = 'build'
-        status['success'] = False
-        status['tags'] = {}
+        status['success'] = args['success']
+        status['files'] = {}
         resultdir = os.path.join(args['directory'], 'pool', args['package'])
         for filename in os.listdir(resultdir):
-            if filename.endswith('.dsc'):
-                status['success'] = True
-            else:
-                full_path = os.path.join(resultdir, filename)
-                tag = LogParser(full_path).parse()
-                if tag:
-                    status['tags'][filename] = tag
+            if filename.endswith('.json'):
+                continue
+            full_path = os.path.join(resultdir, filename)
+            info = {}
+            info['size'] = self._get_human_size(os.path.getsize(full_path))
+            tag = LogParser(full_path).parse()
+            if tag:
+                info['tags'] = tag
+            status['files'][filename] = info
         self._write_package_json(args, status)
+        status.pop('files', None)
         self._append_json_logfile(args, status)
 
 

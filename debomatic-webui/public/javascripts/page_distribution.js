@@ -73,6 +73,7 @@ function Page_Distrubion(socket) {
     var sidebarOffset = 0;
     var new_lines = [];
     var current_file_in_preview = false;
+    var back_on_top_pressed = false;
 
     function __check_hash_makes_sense() {
         if (window.location.hash.indexOf('..') >= 0) {
@@ -270,8 +271,8 @@ function Page_Distrubion(socket) {
                     var html_file = $('<li id="file-' + f.orig_name + '">' +
                         '<a title="' + f.orig_name + '" href="' +
                         Utils.from_view_to_hash(tmp) + '">' +
-                        '<span class="status pull-right"></span>' +
-                        f.name + '</a></li>');
+                        '<span class="tags pull-right"></span>' +
+                        '<span class="name">' + f.name + '</span></a></li>');
                     html_file.on('click', function () {
                         files.select(this);
                     });
@@ -286,7 +287,7 @@ function Page_Distrubion(socket) {
                 view.package.debs = Utils.clone(socket_data.package.debs);
                 // update.html
                 socket_data.package.debs.forEach(function (f) {
-                    $('#debs ul').append('<li><a title="' + f.orig_name + '" href="' + f.path + '">' +
+                    $('#debs ul').append('<li id="file-' + f.orig_name + '"><a title="' + f.orig_name + '" href="' + f.path + '">' +
                         f.name + '</a> <span>.' + f.extension + '</span></li>');
                 });
                 $('#debs').show();
@@ -297,7 +298,7 @@ function Page_Distrubion(socket) {
                 view.package.sources = Utils.clone(socket_data.package.sources);
                 // update html
                 socket_data.package.sources.forEach(function (f) {
-                    $('#sources ul').append('<li><a title="' + f.orig_name + '" href="' + f.path + '">' + f.name + '</a></li>');
+                    $('#sources ul').append('<li id="file-' + f.orig_name + '"><a title="' + f.orig_name + '" href="' + f.path + '">' + f.name + '</a></li>');
                 });
                 $('#sources').show();
             }
@@ -338,8 +339,13 @@ function Page_Distrubion(socket) {
         show: function () {
             $('#files').show();
         },
-        set_status: function (file, status) {
-            $('#logs li[id="file-' + file + '"] .status').html(status);
+        set_tags: function (file, tags) {
+            console.log(file, tags);
+            $('li[id="file-' + file + '"] .tags').html(tags);
+        },
+        set_size: function (file, size) {
+            //console.log(file, size);
+            $('[id="file-' + file + '"] a').append('<span class="size">' + size + '</span>');
         }
     };
 
@@ -367,11 +373,15 @@ function Page_Distrubion(socket) {
                 return result;
             }
 
-            if (socket_data.hasOwnProperty('tags')) {
-                var tags = socket_data.tags;
-                for (var file in tags) {
-                    if (tags.hasOwnProperty(file))
-                        files.set_status(file, tags[file]);
+            if (socket_data.hasOwnProperty('files')) {
+                var s_files = socket_data.files;
+                for (var file in s_files) {
+                    if (s_files.hasOwnProperty(file)) {
+                        if (s_files[file].hasOwnProperty('tags'))
+                            files.set_tags(file, s_files[file].tags);
+                        if (s_files[file].hasOwnProperty('size'))
+                            files.set_size(file, s_files[file].size);
+                    }
                 }
             }
 
@@ -407,6 +417,7 @@ function Page_Distrubion(socket) {
 
     var file = {
         set: function (socket_data) {
+            back_on_top_pressed = false;
             var new_content = Utils.escape_html(socket_data.file.content);
             var file_content = $('#file .content');
             view.file = Utils.clone(socket_data.file);
@@ -424,7 +435,7 @@ function Page_Distrubion(socket) {
             new_content = Utils.escape_html(new_content);
             if (!current_file_in_preview) {
                 file_content.append(new_content);
-                if (config.preferences.autoscroll) {
+                if (config.preferences.autoscroll && !back_on_top_pressed) {
                     // scroll down if file is covering footer
                     var file_height = $('#fileOffset').offset().top;
                     var footerOffset = $('footer').offset().top;
@@ -793,6 +804,8 @@ function Page_Distrubion(socket) {
 
         // Init sticky-package back_on_top on click
         $('#sticky-package').on('click', function () {
+            back_on_top_pressed = true;
+            debug(1, 'back on top pressed, disabling autoscroll')
             page.go.up(100);
         });
 

@@ -141,6 +141,32 @@ footer .info {
   margin-top: -3px;
 }
 
+#files .size {
+  margin: 0 8px 0 0;
+  font-size: 70%;
+  color: rgba(0,0,0,0.25);
+  float: right;
+  min-width: 60px;
+  text-align: right;
+  display: inline-block;
+  line-height: 20px;
+  text-shadow: 0 1px 1px white;
+}
+
+#logs .size {
+  float: none;
+  line-height: inherit;
+}
+
+#logs .active .size {
+  text-shadow: none;
+}
+
+#logs .name {
+  min-width: 75px;
+  display: inline-block;
+}
+
 #status span {
   font-weight: bold;
   font-size: small;
