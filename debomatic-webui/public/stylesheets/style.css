@@ -75,7 +75,7 @@ aside .nav-pills li {
 
 #sidebar .fixed {
   position: fixed;
-  width: 220px !important;
+  min-width: 220px !important;
   top: 0;
 }
 
