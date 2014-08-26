@@ -11,6 +11,7 @@ merger_config = (architecture, port) ->
 
     config.web = {}
     config.web.description = 'This is a web interface for debomatic over ' + architecture
+    config.web.title = 'Deb-o-Matic ' + architecture
 
     config.web.debomatic = {}
     config.web.debomatic.admin = {}
