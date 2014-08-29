@@ -39,6 +39,13 @@ subdomains["debomatic-powerpc.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
+subdomains["debomatic-s390x.debian.net"] = new httpProxy.createProxyServer({
+  target: {
+    host: 'localhost',
+    port: 8004
+  }
+})
+
 var mainServer = http.createServer(function(req, res) {
   var host = req.headers.host
   if (subdomains.hasOwnProperty(host))
