@@ -31,11 +31,10 @@ from json import load as fileToJSON
 from collections import defaultdict
 
 
-# ZZ and 00 are wrappers for JSONLogger to get module run
-# as first and as last one for pre_* and post_* hooks
-class DebomaticModule_00_JSONLogger:
+class DebomaticModule_JSONLoggerStart:
     def __init__(self):
         self.logger = DebomaticModule_JSONLogger()
+        self.first = True
 
     def pre_chroot(self, args):
         self.logger.pre_chroot(args)
@@ -44,9 +43,10 @@ class DebomaticModule_00_JSONLogger:
         self.logger.pre_build(args)
 
 
-class DebomaticModule_ZZ_JSONLogger:
+class DebomaticModule_JSONLoggerStop:
     def __init__(self):
         self.logger = DebomaticModule_JSONLogger()
+        self.last = True
 
     def post_chroot(self, args):
         self.logger.post_chroot(args)
