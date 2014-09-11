@@ -33,6 +33,24 @@
               <% if (web.paths.preferences) { %>
               <li><a href="<%= web.paths.preferences %>">Preferences</a></li>
               <% } %>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">All services <span class="caret"></span></a>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu3">
+                <script>
+                var all_services = ['amd64', 'i386', 'armel', 'armhf', 'powerpc', 's390x'];
+                for (var i = 0; i < all_services.length; i++) {
+                  var arch = all_services[i];
+                  var host = "debomatic-" + arch + '.debian.net';
+                  if (host == location.hostname) {
+                      document.write('<li class="disabled"><a>'+ arch +'</a></li>')
+                  } else {
+                    document.write('<li><a target="_blank" href="http://' + host + '">'+ arch +'</a></li>');
+                  }
+
+                }
+                </script>
+                </ul>
+              </li>
             </ul>
           </div>
         </div>
