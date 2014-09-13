@@ -14,9 +14,28 @@
   <body>
     <div id="wrapper" class="container-fluid">
       <nav class="navbar navbar-inverse" role="navigation">
-        <div onclick="window.location.href='/'" class="navbar-header home-link">
+        <div class="navbar-header home-link">
             <span class="pull-left icon"></span>
-            <span class="navbar-brand">Deb-o-Matic <small><%= web.debomatic.architecture %></small></span>
+            <span style="padding-right: 5px;" onclick="window.location.href='/'" class="navbar-brand">Deb-o-Matic</span>
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                <a style="color: #eee; padding-left: 5px; padding-right: 5px" href="#" class="dropdown-toggle" data-toggle="dropdown"><%= web.debomatic.architecture %> <span class="caret"></span></a>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                  <script>
+                  var all_services = ['amd64', 'i386', 'armel', 'armhf', 'powerpc', 's390x'];
+                  for (var i = 0; i < all_services.length; i++) {
+                    var arch = all_services[i];
+                    var host = "debomatic-" + arch + '.debian.net';
+                    if (host == location.hostname) {
+                        document.write('<li class="disabled"><a>'+ arch +'</a></li>');
+                    } else {
+                        document.write('<li><a href="http://' + host + '">'+ arch +'</a></li>');
+                    }
+                  }
+                  </script>
+                </ul>
+              </li>
+            </ul>
         </div>
         <div class="collapse navbar-collapse">
           <div id="distributions">
@@ -33,24 +52,6 @@
               <% if (web.paths.preferences) { %>
               <li><a href="<%= web.paths.preferences %>">Preferences</a></li>
               <% } %>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Architectures <span class="caret"></span></a>
-                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                <script>
-                var all_services = ['amd64', 'i386', 'armel', 'armhf', 'powerpc', 's390x'];
-                for (var i = 0; i < all_services.length; i++) {
-                  var arch = all_services[i];
-                  var host = "debomatic-" + arch + '.debian.net';
-                  if (host == location.hostname) {
-                      document.write('<li class="disabled"><a>'+ arch +'</a></li>');
-                  } else {
-                      document.write('<li><a href="http://' + host + '">'+ arch +'</a></li>');
-                  }
-
-                }
-                </script>
-                </ul>
-              </li>
             </ul>
           </div>
         </div>
