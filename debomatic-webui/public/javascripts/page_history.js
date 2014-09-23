@@ -105,6 +105,36 @@ function Page_History() {
 
     }
 
+    // add tooltip to graphs
+    function _create_graph_tooltip(graph, element, suffix_value) {
+        var $chart = $(graph);
+        var $toolTip = $chart
+            .append('<div class="tooltip fade top in" role="tooltip">' +
+                '<div class="tooltip-arrow"></div> ' +
+                '<div class="tooltip-inner"></div>' +
+                '</div>').find('.tooltip').hide();
+
+        $chart.on('mousemove', function (event) {
+            $toolTip.css({
+                left: event.offsetX - $toolTip.width() / 2,
+                top: event.offsetY - $toolTip.height() - 20
+            });
+        });
+        $chart.on('mouseenter', element, function () {
+            var $point = $(this),
+                value = $point.attr('ct:value'),
+                seriesName = $point.parent().attr('ct:series-name');
+            if (suffix_value)
+                value = value + " " + suffix_value;
+            $toolTip.find('.tooltip-inner').html(seriesName + ' (' + value + ')');
+            $toolTip.show();
+        });
+
+        $chart.on('mouseleave', element, function () {
+            $toolTip.hide();
+        });
+    }
+
     function _create_graph_distributions() {
         // build the distribution Pie graph
         var distributions_data = {
@@ -147,44 +177,87 @@ function Page_History() {
             });
         }
         Chartist.Line('#days-chart', days_data);
+        _create_graph_tooltip("#days-chart", '.ct-point');
+
+        var $chart = $('#days-chart');
         var effect = function (x, t, b, c, d) {
             return -c * (t /= d) * (t - 2) + b;
         };
-        var $chart = $('#days-chart');
-        var $toolTip = $chart
-            .append('<div class="tooltip fade top in" role="tooltip">' +
-                '<div class="tooltip-arrow"></div> ' +
-                '<div class="tooltip-inner"></div>' +
-                '</div>').find('.tooltip').hide();
 
         $chart.on('mouseenter', '.ct-point', function () {
-            var $point = $(this),
-                value = $point.attr('ct:value'),
-                seriesName = $point.parent().attr('ct:series-name');
-
-            $point.stop().animate({
+            $(this).stop().animate({
                 'stroke-width': '20px'
             }, 200, effect);
-            $toolTip.find('.tooltip-inner').html(seriesName + ' (' + value + ')');
-            $toolTip.show();
         });
 
         $chart.on('mouseleave', '.ct-point', function () {
-            var $point = $(this);
-
-            $point.stop().animate({
+            $(this).stop().animate({
                 'stroke-width': '10px'
             }, 150, effect);
-            $toolTip.hide();
         });
+    }
 
-        $chart.on('mousemove', function (event) {
-            $toolTip.css({
-                left: event.offsetX - $toolTip.width() / 2,
-                top: event.offsetY - $toolTip.height() - 20
+    function _create_graph_disk(socket_data) {
+        var distributions = [];
+        var subdirs = [];
+        var data = {};
+        var total_sizes = {};
+        var series = [];
+        var labels = [];
+        for (var distribution in socket_data) {
+            if (distribution == 'size') {
+                var total_size_in_gb = Number(socket_data.size / 1000).toFixed(1);
+                $("#disk-usage .total-size").text(total_size_in_gb + ' GB');
+                continue;
+            }
+            distributions.push(distribution);
+        }
+        distributions.sort();
+        for (var i = 0; i < distributions.length; i++) {
+            distribution = distributions[i];
+            for (var subdir in socket_data[distribution]) {
+                if (subdir == 'size') {
+                    total_sizes[distribution] = socket_data[distribution].size;
+                    continue;
+                }
+                if (!data.hasOwnProperty(subdir)) {
+                    subdirs.push(subdir);
+                    data[subdir] = [];
+                }
+                data[subdir].push(socket_data[distribution][subdir]);
+            }
+        }
+        for (i = 0; i < subdirs.length; i++) {
+            series.push({
+                name: subdirs[i],
+                data: data[subdirs[i]]
             });
+        }
 
+        var options = {
+            seriesBarDistance: 12
+        };
+
+        Chartist.Bar('#disk-chart', {
+            labels: distributions,
+            series: series
+        }, options);
+        _create_graph_tooltip("#disk-chart", '.ct-bar', "MB");
+
+        // WORKAROUND: add total spaces to label
+        // wating for support multilines for label in chartist-js
+        // https://github.com/gionkunz/chartist-js/issues/25
+        $('#disk-chart svg').height("+=20");
+        $('#disk-chart .ct-label.ct-horizontal').each(function (index, elem) {
+            var size = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            var currentY = Number(elem.getAttribute('dy'));
+            size.setAttribute('dx', Number(elem.getAttribute('dx')));
+            size.setAttribute('dy', currentY + 15);
+            size.setAttribute('class', 'ct-label ct-horizontal ct-size');
+            size.textContent = total_sizes[elem.textContent] + " MB";
+            elem.parentNode.appendChild(size);
         });
+
     }
 
     function _exportTableToCSV($table, filename) {
@@ -257,10 +330,20 @@ function Page_History() {
             $('.body').fadeIn("fast");
         });
 
+        socket.on(config.events.client.disk_usage, function (socket_data) {
+            debug_socket('received', config.events.client.disk_usage, socket_data);
+            _create_graph_disk(socket_data);
+        });
+
         debug_socket('emit', config.events.client.history, '');
         socket.emit(config.events.client.history);
+
+        debug_socket('emit', config.events.client.disk_usage, '');
+        socket.emit(config.events.client.disk_usage);
     };
 
+    // active downlaod tooltip
+    $("[data-toggle='popover']").popover();
     $('#download').on('click', function () {
         _exportTableToCSV.apply(this, [$('#history'), 'history.csv']);
     });

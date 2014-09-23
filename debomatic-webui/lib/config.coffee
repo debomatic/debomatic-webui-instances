@@ -91,6 +91,15 @@ config.debomatic.excluded_files = [
 ]
 
 ###
+List of subdirectories in distributions to show in disk usage
+###
+config.debomatic.disk_usage_subdirs = [
+    "aptcache"
+    "pool"
+    "chroot"
+]
+
+###
 The routes, that are the pages urls
 ###
 config.routes = {}
@@ -118,6 +127,7 @@ config.events.client.file = "c.file"
 config.events.client.file_newcontent = "c.file_newcontent"
 config.events.client.status = "c.status"
 config.events.client.history = "c.history"
+config.events.client.disk_usage = "c.disk_usage"
 
 ###
 The status according with JSONLogger.py module

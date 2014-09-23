@@ -262,7 +262,7 @@ footer .info {
 /* History page */
 .ct-chart {
   height: 180px;
-  width: 50%;
+  width: 100%;
   float: left;
   margin-bottom: 30px;
   position: relative;
@@ -279,6 +279,7 @@ footer .info {
 
 #history {
   margin-top: 15px;
+  max-width: 1000px;
 }
 
 #history .alt-row {
@@ -287,6 +288,10 @@ footer .info {
 
 #history .package {
   white-space: nowrap;
+}
+
+#disk-usage .ct-label.ct-size {
+  font-size: 0.72em;
 }
 
 /* add more colors to graphs */
