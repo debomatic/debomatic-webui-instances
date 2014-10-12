@@ -17,17 +17,24 @@ subdomains["debomatic-i386.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
-subdomains["debomatic-armel.debian.net"] = new httpProxy.createProxyServer({
+subdomains["debomatic-arm64.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
     port: 8001
   }
 })
 
-subdomains["debomatic-armhf.debian.net"] = new httpProxy.createProxyServer({
+subdomains["debomatic-armel.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
     port: 8002
+  }
+})
+
+subdomains["debomatic-armhf.debian.net"] = new httpProxy.createProxyServer({
+  target: {
+    host: 'localhost',
+    port: 8003
   }
 
 })
@@ -35,14 +42,14 @@ subdomains["debomatic-armhf.debian.net"] = new httpProxy.createProxyServer({
 subdomains["debomatic-powerpc.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
-    port: 8003
+    port: 8004
   }
 })
 
 subdomains["debomatic-s390x.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
-    port: 8004
+    port: 8005
   }
 })
 
