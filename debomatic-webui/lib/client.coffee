@@ -20,9 +20,10 @@ get_files_list_from_package = (data, callback) ->
                                      config.routes.debomatic)
             file.orig_name = f
             file.name = f.split("_")[0]
-            if file.extension in ["deb", "ddeb", "udeb"]
+            type = utils.file_type(f)
+            if type is "deb"
                 data.package.debs.push(file)
-            else if file.extension in ["changes", "dsc"] or f.indexOf('.tar.') > 0 or f.indexOf('.diff.') > 0
+            else if type is "source"
                 file.name = f.replace(data.package.orig_name + ".", "")
                 if file.extension is "changes"
                     file.name = f.split('_').pop()
@@ -73,7 +74,7 @@ class Client
                 pack.orig_name = p
                 read_package_status {distribution: data.distribution, package: pack}, (content) =>
                     for attr of content
-                        if attr not in ['distribution', 'package', 'status', 'success']
+                        if attr not in ['distribution', 'package', 'status', 'success', 'gravatar']
                             delete content[attr]
                     @socket.emit e.distribution_packages_status, content
                 data.distribution.packages.push pack

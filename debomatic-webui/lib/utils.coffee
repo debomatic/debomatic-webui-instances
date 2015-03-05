@@ -5,6 +5,8 @@ glob = require("glob")
 Tail = require("tail").Tail
 
 _check_no_backward = (backward_path) ->
+    if backward_path is undefined
+        return false
     if typeof backward_path is 'string'
         return backward_path.indexOf("..") < 0
     return true
@@ -33,7 +35,7 @@ get_distributions = (callback) ->
         if err
             errors_handler "get_distributions", err
             return
-        distributions = (dir.split(path.sep)[-2...-1] for dir in directories)
+        distributions = (dir.split(path.sep)[-2...-1].pop() for dir in directories)
         callback(distributions)
 
 get_distribution_pool_path = (data) ->
@@ -117,6 +119,14 @@ errors_handler = (from, err, socket) ->
     socket.emit config.events.error, msg if socket
     return
 
+file_type = (filename) ->
+    extension = filename.split(".").pop()
+    if extension in ["deb", "ddeb", "udeb"]
+        return "deb"
+    if extension in ["changes", "dsc"] or filename.indexOf('.tar.') > 0 or filename.indexOf('.diff.') > 0
+        return "source"
+    return "log"
+
 Tail::watchEvent = (e) ->
     _this = this
     if e is "change"
@@ -152,5 +162,6 @@ module.exports.get_file_path = get_file_path
 module.exports.get_files_list = get_files_list
 module.exports.watch_path_onsocket = watch_path_onsocket
 module.exports.errors_handler = errors_handler
+module.exports.file_type = file_type
 module.exports.arrayEqual = arrayEqual
 module.exports.Tail = Tail

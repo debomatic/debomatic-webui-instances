@@ -139,8 +139,42 @@ footer .info {
 }
 
 #packages li .icon {
+  padding: 10px;
+  position: absolute;
+  right: 0px;
+  top: -2px;
+}
+
+#packages li:not( .active) .icon {
   float: right;
-  margin-top: -3px;
+  color: white;
+  text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+  background: rgba(111, 122, 123, 0.3);
+  border-radius: 17px 0 0 17px;
+  box-shadow: 1px 0px 1px rgba(0, 0, 0, 0.3) inset;
+}
+
+#packages li a {
+  background-image: url("/images/package.png");
+  padding-left: 40px;
+  background-repeat: no-repeat;
+  background-position: left;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  height: 32px;
+}
+
+#packages li:not( .active) a {
+  box-shadow: 0 0px 3px rgba(0, 0, 0, 0.2) inset;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(255,255,255, 0.76);
+}
+
+#packages li:not( .active) a:hover {
+  background-color: rgba(0, 0, 0, 0.06);
 }
 
 #files .size {
@@ -148,7 +182,7 @@ footer .info {
   font-size: 70%;
   color: rgba(0,0,0,0.25);
   float: right;
-  min-width: 60px;
+  min-width: 54px;
   text-align: right;
   display: inline-block;
   line-height: 20px;
@@ -157,7 +191,7 @@ footer .info {
 
 #logs .size {
   float: none;
-  line-height: 0px;
+  line-height: 12px;
 }
 
 #logs .active .size {
@@ -165,8 +199,13 @@ footer .info {
 }
 
 #logs .name {
-  min-width: 75px;
+  min-width: 95px;
   display: inline-block;
+}
+
+#logs .tags {
+  margin-top: -3px;
+  padding-top: 3px;
 }
 
 #status span {
@@ -295,10 +334,6 @@ footer .info {
 
 #history .package {
   white-space: nowrap;
-}
-
-#disk-usage .ct-label.ct-size {
-  font-size: 0.72em;
 }
 
 /* add more colors to graphs */

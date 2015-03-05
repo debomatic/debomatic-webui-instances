@@ -29,9 +29,11 @@ from time import time
 from json import dumps as toJSON
 from json import load as fileToJSON
 from collections import defaultdict
+from hashlib import md5
 
 
 class DebomaticModule_JSONLoggerStart:
+
     def __init__(self):
         self.logger = DebomaticModule_JSONLogger()
         self.first = True
@@ -44,6 +46,7 @@ class DebomaticModule_JSONLoggerStart:
 
 
 class DebomaticModule_JSONLoggerStop:
+
     def __init__(self):
         self.logger = DebomaticModule_JSONLogger()
         self.last = True
@@ -64,30 +67,33 @@ class DebomaticModule_JSONLogger:
     def _set_json_logfile_name(self, args):
         """If debomatic config file has section [jsonlogger] try to get
         'jsonfile' option and override the default value."""
-        if 'opts' in args and \
-           args['opts'].has_section('jsonlogger') and \
-           args['opts'].has_option('jsonlogger', 'jsonfile'):
-            self.jsonfile = args['opts'].get('jsonlogger', 'jsonfile').strip()
+        if (args.opts.has_section('jsonlogger') and
+                args.opts.has_option('jsonlogger', 'jsonfile')):
+            self.jsonfile = args.opts.get('jsonlogger', 'jsonfile').strip()
 
     def _get_package_json_filename(self, args):
         """Get the path of package JSON file"""
-        return '%(directory)s/pool/%(package)s/%(package)s.json' % args
+        return ('%(directory)s/pool/%(package)s/%(package)s.json' %
+                {'directory': args.directory, 'package': args.package})
 
-    def _get_distribution_status(self, args):
+    def _get_distribution_status(self, args, with_success=False):
         """From args to distribution status"""
         status = {}
-        status['status'] = args['cmd']
-        status['distribution'] = args['distribution']
-        if 'success' in args:
-            status['success'] = args['success']
+        status['status'] = args.action
+        status['distribution'] = args.distribution
+        if with_success:
+            status['success'] = args.success
         return status
 
     def _get_package_status(self, args):
         """From args to package status"""
         status = {}
-        for k in ['package', 'distribution', 'uploader']:
-            if k in args:
-                status[k] = args[k]
+        status['package'] = args.package
+        status['distribution'] = args.distribution
+        status['uploader'] = args.uploader
+        if args.uploader != "":
+            email = args.uploader.lower().encode('utf-8')
+            status['gravatar'] = md5(email).hexdigest()
         return status
 
     def _append_json_logfile(self, args, status):
@@ -126,11 +132,15 @@ class DebomaticModule_JSONLogger:
             num /= 1024.0
 
     def pre_chroot(self, args):
+        if args.action is None:
+            return
         distribution = self._get_distribution_status(args)
         self._append_json_logfile(args, distribution)
 
     def post_chroot(self, args):
-        distribution = self._get_distribution_status(args)
+        if args.action is None:
+            return
+        distribution = self._get_distribution_status(args, with_success=True)
         self._append_json_logfile(args, distribution)
 
     def pre_build(self, args):
@@ -145,18 +155,19 @@ class DebomaticModule_JSONLogger:
     def post_build(self, args):
         status = self._get_package_status(args)
         status['status'] = 'build'
-        status['success'] = args['success']
+        status['success'] = args.success
         status['files'] = {}
-        resultdir = os.path.join(args['directory'], 'pool', args['package'])
+        resultdir = os.path.join(args.directory, 'pool', args.package)
         for filename in os.listdir(resultdir):
             if filename.endswith('.json'):
                 continue
             full_path = os.path.join(resultdir, filename)
             info = {}
             info['size'] = self._get_human_size(os.path.getsize(full_path))
-            tag = LogParser(full_path).parse()
+            tag, level = LogParser(full_path).parse()
             if tag:
                 info['tags'] = tag
+                info['level'] = level
             status['files'][filename] = info
         self._write_package_json(args, status)
         status.pop('files', None)
@@ -165,6 +176,7 @@ class DebomaticModule_JSONLogger:
 
 # Parser for log files
 class LogParser():
+
     def __init__(self, file_path):
         self.file = file_path
         self.basename = os.path.basename(file_path)
@@ -173,16 +185,18 @@ class LogParser():
     def parse(self):
         if not os.path.isfile(self.file):
             return None
-        result = None
+        tag = None
+        # level can be: info, warning, danger
+        level = "info"  # by default
         if self.extension == 'lintian':
-            result = self.parse_lintian()
+            tag, level = self.parse_lintian()
         elif self.extension == 'autopkgtest':
-            result = self.parse_autopkgtest()
+            tag, level = self.parse_autopkgtest()
         elif self.extension == 'piuparts':
-            result = self.parse_piuparts()
+            tag, level = self.parse_piuparts()
         elif self.extension == 'blhc':
-            result = self.parse_blhc()
-        return result
+            tag, level = self.parse_blhc()
+        return tag, level
 
     def parse_lintian(self):
         tags = defaultdict(int)
@@ -190,7 +204,13 @@ class LogParser():
             for line in fd:
                 if len(line) >= 2 and line[0] != 'N' and line[1] == ':':
                     tags[line[0]] += 1
-        return self._from_tags_to_result(tags)
+        tags = self._from_tags_to_result(tags)
+        level = "info"
+        if 'E' in tags:
+            level = "danger"
+        elif 'W' in tags:
+            level = "warning"
+        return tags, level
 
     def parse_autopkgtest(self):
         tags = defaultdict(int)
@@ -211,14 +231,14 @@ class LogParser():
                     tags[info[0]] += 1
                 elif found and line == '\n':
                     break
-        return self._from_tags_to_result(tags)
+        return self._from_tags_to_result(tags), 'danger'
 
     def parse_piuparts(self):
         with open(self.file, 'r') as fd:
             lines = fd.readlines()
             if len(lines) == 0 or lines[-1].find('ERROR:') >= 0:
-                return 'E'
-        return None
+                return 'E', 'danger'
+        return None, None
 
     def parse_blhc(self):
         tags = defaultdict(int)
@@ -229,7 +249,7 @@ class LogParser():
                     continue
                 tag = info[0].replace('FLAGS', '')
                 tags[tag] += 1
-        return ' '.join(sorted(list(tags.keys())))
+        return ' '.join(sorted(list(tags.keys()))), 'warning'
 
     def _from_tags_to_result(self, tags):
         keys = sorted(list(tags.keys()))
