@@ -24,7 +24,7 @@
               <a style="color: #eee; font-size: 15px; padding: 15px 10px;" href="#" class="dropdown-toggle" data-toggle="dropdown"><%= web.debomatic.architecture %> <span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 <script>
-                var all_services = ['amd64', 'i386', 'arm64', 'armel', 'armhf', 'powerpc', 's390x'];
+                var all_services = ['amd64', 'i386', 'arm64', 'armel', 'armhf', 'mips', 'powerpc', 's390x'];
                 for (var i = 0; i < all_services.length; i++) {
                   var arch = all_services[i];
                   var host = "debomatic-" + arch + '.debian.net';
