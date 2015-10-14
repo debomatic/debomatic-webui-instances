@@ -5,7 +5,7 @@ Description=Deb-o-Matic web.ui
 Type=simple
 EnvironmentFile=/home/debomatic/debomatic-webui/systemd/systemd.env
 ExecStart=/usr/bin/nodejs ${DW}/node_modules/.bin/coffee ${DW}/debomatic-webui -c ${DWCONFIG}/%i.config
-ExecStop=/bin/kill -TERM $MAINPID
+ExecStop=/bin/kill -s SIGTERM $MAINPID
 Restart=on-failure
 
 [Install]

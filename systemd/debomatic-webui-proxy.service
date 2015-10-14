@@ -5,7 +5,7 @@ Description=Deb-o-Matic Node.js Proxy
 Type=simple
 EnvironmentFile=/home/debomatic/debomatic-webui/systemd/systemd.env
 ExecStart=/usr/bin/nodejs ${DWPROXY}/proxy.js
-ExecStop=/bin/kill -TERM $MAINPID
+ExecStop=/bin/kill -s SIGTERM $MAINPID
 Restart=on-failure
 
 [Install]
