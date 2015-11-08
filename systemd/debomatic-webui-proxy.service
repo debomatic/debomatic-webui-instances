@@ -7,6 +7,7 @@ EnvironmentFile=/home/debomatic/debomatic-webui/systemd/systemd.env
 ExecStart=/usr/bin/nodejs ${DWPROXY}/proxy.js
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
