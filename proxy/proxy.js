@@ -66,10 +66,17 @@ subdomains["debomatic-powerpc.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
-subdomains["debomatic-s390x.debian.net"] = new httpProxy.createProxyServer({
+subdomains["debomatic-ppc64el.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
     port: 8008
+  }
+})
+
+subdomains["debomatic-s390x.debian.net"] = new httpProxy.createProxyServer({
+  target: {
+    host: 'localhost',
+    port: 8009
   }
 })
 
