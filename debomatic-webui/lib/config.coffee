@@ -89,6 +89,7 @@ config.debomatic.excluded_files = [
     "datestamp"
     "json"
     "build"
+    "buildinfo"
 ]
 
 ###
