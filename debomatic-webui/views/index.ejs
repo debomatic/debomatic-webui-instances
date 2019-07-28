@@ -44,29 +44,6 @@
         To upload packages, you may want to add these entries to your dput configuration:
       </header>
       <section>
-          <!-- dput -->
-          <div class="dput col-md-6">
-            <div class="panel panel-info">
-              <div class="panel-heading">
-                <h3 class="panel-title">dput</h3>
-              </div>
-              <div class="panel-body">
-                <pre>
-[debomatic-<%=       web.debomatic.architecture %>]
-fqdn           = <%= web.debomatic.dput.host %>
-incoming       = <%= web.debomatic.dput.incoming %>
-login          = <%= web.debomatic.dput.login %>
-method         = <%= web.debomatic.dput.method %>
-allow_unsigned_uploads  = <%= web.debomatic.dput.unsigned_uploads ? '1' : '0' %>
-allow_dcut     = 1
-scp_compress   = 1
-
-</pre>
-              </div>
-            </div>
-          </div>
-          <!-- /dput -->
-
           <!-- dput-ng -->
           <div class="dput col-md-6">
             <div class="panel panel-info">
@@ -88,6 +65,29 @@ scp_compress   = 1
             </div>
           </div>
           <!-- /dput-ng -->
+
+          <!-- dput -->
+          <div class="dput col-md-6">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title">dput</h3>
+              </div>
+              <div class="panel-body">
+                <pre>
+Not currently supported, see <a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=505173">#505173</a>
+
+
+
+
+
+
+
+
+</pre>
+              </div>
+            </div>
+          </div>
+          <!-- /dput -->
       </section>
     </article> <!-- /#configuration -->
 

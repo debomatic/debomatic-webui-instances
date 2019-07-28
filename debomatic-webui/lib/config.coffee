@@ -54,7 +54,7 @@ Configuration of dput to show in the home page.
 config.web.debomatic.dput.incoming = config.debomatic.path
 config.web.debomatic.dput.host = config.host
 config.web.debomatic.dput.login = "debomatic"
-config.web.debomatic.dput.method = "scp"
+config.web.debomatic.dput.method = "sftp"
 config.web.debomatic.dput.unsigned_uploads = false
 
 ###
