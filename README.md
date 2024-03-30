@@ -13,6 +13,7 @@ Some **debomatic-webui** instances are already running over:
  * http://debomatic-armhf.debian.net
  * http://debomatic-mips64el.debian.net
  * http://debomatic-ppc64el.debian.net
+ * http://debomatic-riscv64.debian.net
  * http://debomatic-s390x.debian.net
 
 ## Requirements

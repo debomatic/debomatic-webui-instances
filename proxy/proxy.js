@@ -52,6 +52,13 @@ subdomains["debomatic-ppc64el.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
+subdomains["debomatic-riscv64.debian.net"] = new httpProxy.createProxyServer({
+  target: {
+    host: 'localhost',
+    port: 8005
+  }
+})
+
 subdomains["debomatic-s390x.debian.net"] = new httpProxy.createProxyServer({
   target: {
     host: 'localhost',
