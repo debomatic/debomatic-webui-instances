@@ -1,5 +1,7 @@
 var http = require('http')
+  , https = require('https')
   , httpProxy = require('http-proxy')
+  , fs = require('fs')
 
 var subdomains = {}
 
@@ -73,7 +75,34 @@ subdomains["debomatic-staging.debian.net"] = new httpProxy.createProxyServer({
   }
 })
 
-var mainServer = http.createServer(function(req, res) {
+if (fs.existsSync('/etc/letsencrypt/live/debomatic-amd64.debian.net')) {
+  var options = {
+    https: {
+      key: fs.readFileSync('/etc/letsencrypt/live/debomatic-amd64.debian.net/privkey.pem'),
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-amd64.debian.net/cert.pem')
+    }
+  }
+}
+
+if (fs.existsSync('/etc/letsencrypt/live/debomatic-arm64.debian.net')) {
+  var options = {
+    https: {
+      key: fs.readFileSync('/etc/letsencrypt/live/debomatic-arm64.debian.net/privkey.pem'),
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-arm64.debian.net/cert.pem')
+    }
+  }
+}
+
+if (fs.existsSync('/etc/letsencrypt/live/debomatic-staging.debian.net')) {
+  var options = {
+    https: {
+      key: fs.readFileSync('/etc/letsencrypt/live/debomatic-staging.debian.net/privkey.pem'),
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-staging.debian.net/cert.pem')
+    }
+  }
+}
+
+var mainServer = https.createServer(options.https, function(req, res) {
   var host = req.headers.host
   if (subdomains.hasOwnProperty(host))
     subdomains[host].web(req, res)
@@ -83,7 +112,13 @@ var mainServer = http.createServer(function(req, res) {
 mainServer.on('upgrade', function (req, socket, head) {
   var host = req.headers.host
   if (subdomains.hasOwnProperty(host))
-    subdomains[host].ws(req, socket, head);
-});
+    subdomains[host].ws(req, socket, head)
+})
 
-mainServer.listen(80)
+const httpServer = http.createServer((req, res) => {
+  res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` })
+  res.end()
+})
+
+mainServer.listen(443)
+httpServer.listen(80)

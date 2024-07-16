@@ -1,20 +1,20 @@
 debomatic-webui
 ===============
 
-**debomatic-webui** is a web interface for [Deb-o-Matic](http://debomatic.github.io) aims to give to users a simple way to browse logs and to know what's going on debomatic build service providing a real-time packages status.
-This interface is built up on [node](http://nodejs.org/) platform and uses intensely [socket.io](http://socket.io/) and [jquery](http://jquery.com/) technologies.
+**debomatic-webui** is a web interface for [Deb-o-Matic](https://debomatic.github.io) aims to give to users a simple way to browse logs and to know what's going on debomatic build service providing a real-time packages status.
+This interface is built up on [node](https://nodejs.org/) platform and uses intensely [socket.io](https://socket.io/) and [jquery](https://jquery.com/) technologies.
 Whenever you want to leave a suggestion or file a bug report, please open a [new issue](https://github.com/LeoIannacone/debomatic-webui/issues).
 
 Some **debomatic-webui** instances are already running over:
- * http://debomatic-amd64.debian.net
- * http://debomatic-i386.debian.net
- * http://debomatic-arm64.debian.net
- * http://debomatic-armel.debian.net
- * http://debomatic-armhf.debian.net
- * http://debomatic-mips64el.debian.net
- * http://debomatic-ppc64el.debian.net
- * http://debomatic-riscv64.debian.net
- * http://debomatic-s390x.debian.net
+ * https://debomatic-amd64.debian.net
+ * https://debomatic-i386.debian.net
+ * https://debomatic-arm64.debian.net
+ * https://debomatic-armel.debian.net
+ * https://debomatic-armhf.debian.net
+ * https://debomatic-mips64el.debian.net
+ * https://debomatic-ppc64el.debian.net
+ * https://debomatic-riscv64.debian.net
+ * https://debomatic-s390x.debian.net
 
 ## Requirements
 
