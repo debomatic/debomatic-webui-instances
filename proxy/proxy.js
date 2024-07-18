@@ -116,8 +116,14 @@ mainServer.on('upgrade', function (req, socket, head) {
 })
 
 const httpServer = http.createServer((req, res) => {
-  res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` })
-  res.end()
+  var host = req.headers.host
+  if (req.headers['user-agent'].includes('Debian APT-HTTP')) {
+    if (subdomains.hasOwnProperty(host))
+      subdomains[host].web(req, res)
+  } else {
+    res.writeHead(301, { 'Location': `https://${host}${req.url}` })
+    res.end()
+  }
 })
 
 mainServer.listen(443)
