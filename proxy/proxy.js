@@ -79,7 +79,7 @@ if (fs.existsSync('/etc/letsencrypt/live/debomatic-amd64.debian.net')) {
   var options = {
     https: {
       key: fs.readFileSync('/etc/letsencrypt/live/debomatic-amd64.debian.net/privkey.pem'),
-      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-amd64.debian.net/cert.pem')
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-amd64.debian.net/fullchain.pem')
     }
   }
 }
@@ -88,7 +88,7 @@ if (fs.existsSync('/etc/letsencrypt/live/debomatic-arm64.debian.net')) {
   var options = {
     https: {
       key: fs.readFileSync('/etc/letsencrypt/live/debomatic-arm64.debian.net/privkey.pem'),
-      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-arm64.debian.net/cert.pem')
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-arm64.debian.net/fullchain.pem')
     }
   }
 }
@@ -97,7 +97,7 @@ if (fs.existsSync('/etc/letsencrypt/live/debomatic-staging.debian.net')) {
   var options = {
     https: {
       key: fs.readFileSync('/etc/letsencrypt/live/debomatic-staging.debian.net/privkey.pem'),
-      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-staging.debian.net/cert.pem')
+      cert: fs.readFileSync('/etc/letsencrypt/live/debomatic-staging.debian.net/fullchain.pem')
     }
   }
 }
