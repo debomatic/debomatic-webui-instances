@@ -161,7 +161,7 @@ try
     config.web.host = config.host
 
     # get the debomatic pidfile
-    config.debomatic.pidfile = "/var/run/debomatic-" +
+    config.debomatic.pidfile = "/tmp/debomatic-" +
                                crypto.createHash("sha256")
                                      .update(config.debomatic.path)
                                      .digest("hex")
